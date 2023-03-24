@@ -21,7 +21,8 @@ RESULT_DIR=$3
 METADATA_DIR=$4
 SENTENCEPIECES_DIR=$5
 
-docker run -it --rm \
+docker run -it -d --rm \
+  --name='rnnt-nv' \
   --gpus='all' \
   --shm-size=4g \
   --ulimit memlock=-1 \
@@ -33,4 +34,4 @@ docker run -it --rm \
   -v "$RESULT_DIR":/results/ \
   -v $PWD:/code \
   -v $PWD:/workspace/rnnt \
-  mlperf/rnn_speech_recognition bash
+  nvidia/rnn_speech_recognition bash

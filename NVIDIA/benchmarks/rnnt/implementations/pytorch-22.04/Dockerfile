@@ -15,8 +15,21 @@
 ARG FROM_IMAGE_NAME=nvcr.io/nvidia/pytorch:22.04-py3
 FROM ${FROM_IMAGE_NAME}
 
+ARG http_proxy ${http_proxy}
+ARG https_proxy ${https_proxy}
+RUN echo "Acquire::http::Proxy \"${http_proxy}\";\nAcquire::https::Proxy \"${https_proxy}\";" | tee /etc/apt/apt.conf.d/80proxy
+
+ENV http_proxy ${http_proxy}
+ENV https_proxy ${https_proxy}
+
+COPY ./cuda-keyring_1.0-1_all.deb cuda-keyring_1.0-1_all.deb
+RUN dpkg -i cuda-keyring_1.0-1_all.deb
+
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
+	apt-get install -y vim && \
+	apt-get install -y wget && \
+	apt-get install -y libsndfile1 git cmake jq && \
     apt-get install -y sox=14.4.2+git20190427-2 && \
     apt-get install -y --no-install-recommends numactl=2.0.12-1 && \
     rm -rf /var/lib/apt/lists/*
@@ -28,5 +41,7 @@ WORKDIR /workspace/rnnt
 
 COPY requirements.txt .
 RUN pip install --no-cache --disable-pip-version-check -U -r requirements.txt
+RUN pip install ipdb
+# RUN pip install tensorboard-tb-profiler
 
 COPY . .
